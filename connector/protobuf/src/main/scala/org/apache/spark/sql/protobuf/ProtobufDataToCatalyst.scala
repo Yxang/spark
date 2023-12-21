@@ -26,7 +26,7 @@ import org.apache.spark.sql.catalyst.expressions.{ExpectsInputTypes, Expression,
 import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, CodeGenerator, ExprCode}
 import org.apache.spark.sql.catalyst.util.{FailFastMode, ParseMode, PermissiveMode}
 import org.apache.spark.sql.errors.{QueryCompilationErrors, QueryExecutionErrors}
-import org.apache.spark.sql.protobuf.utils.{ProtobufOptions, ProtobufUtils, SchemaConverters}
+import org.apache.spark.sql.protobuf.utils.{ProtobufOptions, ProtobufSqlUtils, ProtobufUtils, SchemaConverters}
 import org.apache.spark.sql.types.{AbstractDataType, BinaryType, DataType, StructType}
 
 private[sql] case class ProtobufDataToCatalyst(
@@ -36,6 +36,25 @@ private[sql] case class ProtobufDataToCatalyst(
     options: Map[String, String] = Map.empty)
     extends UnaryExpression
     with ExpectsInputTypes {
+
+  def this(child: Expression, messageName: Expression, binaryFileDescriptorOrFilePath: Expression) =
+    this(
+      child,
+      ProtobufSqlUtils.convertToString(messageName),
+      ProtobufSqlUtils.readDescriptorFromExpression(binaryFileDescriptorOrFilePath)
+    )
+
+  def this(
+            child: Expression,
+            messageName: Expression,
+            binaryFileDescriptorOrFilePath: Expression,
+            options: Expression) =
+    this(
+      child,
+      ProtobufSqlUtils.convertToString(messageName),
+      ProtobufSqlUtils.readDescriptorFromExpression(binaryFileDescriptorOrFilePath),
+      ProtobufSqlUtils.convertToMapData(options)
+    )
 
   override def inputTypes: Seq[AbstractDataType] = Seq(BinaryType)
 

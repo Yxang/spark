@@ -20,8 +20,32 @@ import org.apache.hadoop.conf.Configuration
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.catalyst.FileSourceOptions
 import org.apache.spark.sql.catalyst.util.{CaseInsensitiveMap, FailFastMode, ParseMode}
+import org.apache.spark.sql.internal.SQLConf
+
+/**
+ * spark 3.5 added class
+ */
+class FileSourceOptions(
+                         @transient private val parameters: CaseInsensitiveMap[String])
+  extends Serializable {
+  import FileSourceOptions.{IGNORE_CORRUPT_FILES, IGNORE_MISSING_FILES}
+
+  def this(parameters: Map[String, String]) = this(CaseInsensitiveMap(parameters))
+
+  val ignoreCorruptFiles: Boolean = parameters.get(IGNORE_CORRUPT_FILES).map(_.toBoolean)
+    .getOrElse(SQLConf.get.ignoreCorruptFiles)
+
+  val ignoreMissingFiles: Boolean = parameters.get(IGNORE_MISSING_FILES).map(_.toBoolean)
+    .getOrElse(SQLConf.get.ignoreMissingFiles)
+}
+
+object FileSourceOptions {
+  val IGNORE_CORRUPT_FILES = "ignoreCorruptFiles"
+  val IGNORE_MISSING_FILES = "ignoreMissingFiles"
+}
+
+
 
 /**
  * Options for Protobuf Reader and Writer stored in case insensitive manner.

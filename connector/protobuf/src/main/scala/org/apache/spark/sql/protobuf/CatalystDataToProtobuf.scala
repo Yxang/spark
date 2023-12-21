@@ -20,15 +20,34 @@ import com.google.protobuf.DynamicMessage
 
 import org.apache.spark.sql.catalyst.expressions.{Expression, UnaryExpression}
 import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
-import org.apache.spark.sql.protobuf.utils.ProtobufUtils
+import org.apache.spark.sql.protobuf.utils.{ProtobufSqlUtils, ProtobufUtils}
 import org.apache.spark.sql.types.{BinaryType, DataType}
 
 private[sql] case class CatalystDataToProtobuf(
-    child: Expression,
-    messageName: String,
-    binaryFileDescriptorSet: Option[Array[Byte]] = None,
-    options: Map[String, String] = Map.empty)
-    extends UnaryExpression {
+                                                child: Expression,
+                                                messageName: String,
+                                                binaryFileDescriptorSet: Option[Array[Byte]] = None,
+                                                options: Map[String, String] = Map.empty)
+  extends UnaryExpression {
+
+  def this(child: Expression, messageName: Expression, binaryFileDescriptorOrFilePath: Expression) =
+    this(
+      child,
+      ProtobufSqlUtils.convertToString(messageName),
+      ProtobufSqlUtils.readDescriptorFromExpression(binaryFileDescriptorOrFilePath)
+    )
+
+  def this(
+            child: Expression,
+            messageName: Expression,
+            binaryFileDescriptorOrFilePath: Expression,
+            options: Expression) =
+    this(
+      child,
+      ProtobufSqlUtils.convertToString(messageName),
+      ProtobufSqlUtils.readDescriptorFromExpression(binaryFileDescriptorOrFilePath),
+      ProtobufSqlUtils.convertToMapData(options)
+    )
 
   // TODO(SPARK-43578): binaryFileDescriptorSet could be very large in some cases. It is better
   //                    to broadcast it so that it is not transferred with each task.
