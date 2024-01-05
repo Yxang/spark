@@ -25,7 +25,7 @@ import com.google.protobuf.TypeRegistry
 import org.apache.spark.sql.catalyst.expressions.{ExpectsInputTypes, Expression, SpecificInternalRow, UnaryExpression}
 import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, CodeGenerator, ExprCode}
 import org.apache.spark.sql.catalyst.util.{FailFastMode, ParseMode, PermissiveMode}
-import org.apache.spark.sql.errors.{QueryCompilationErrors, QueryExecutionErrors}
+import org.apache.spark.sql.protobuf.shadow.errors.{QueryCompilationErrors, QueryExecutionErrors}
 import org.apache.spark.sql.protobuf.utils.{ProtobufOptions, ProtobufSqlUtils, ProtobufUtils, SchemaConverters}
 import org.apache.spark.sql.types.{AbstractDataType, BinaryType, DataType, StructType}
 

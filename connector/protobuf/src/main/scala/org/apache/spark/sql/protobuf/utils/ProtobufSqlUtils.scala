@@ -19,7 +19,7 @@ package org.apache.spark.sql.protobuf.utils
 
 import org.apache.spark.sql.catalyst.expressions.{CreateMap, Expression, Hex, Literal, Unhex}
 import org.apache.spark.sql.catalyst.util.ArrayBasedMapData
-import org.apache.spark.sql.errors.QueryCompilationErrors
+import org.apache.spark.sql.protobuf.shadow.errors.QueryCompilationErrors
 import org.apache.spark.sql.types.{MapType, StringType}
 import org.apache.spark.unsafe.types.UTF8String
 

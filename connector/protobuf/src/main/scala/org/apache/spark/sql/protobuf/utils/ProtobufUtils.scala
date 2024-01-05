@@ -32,7 +32,7 @@ import com.google.protobuf.TypeRegistry
 import org.apache.commons.io.FileUtils
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.errors.QueryCompilationErrors
+import org.apache.spark.sql.protobuf.shadow.errors.QueryCompilationErrors
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 import org.apache.spark.util.Utils

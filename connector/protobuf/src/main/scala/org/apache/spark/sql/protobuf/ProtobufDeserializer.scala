@@ -27,7 +27,7 @@ import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.catalyst.{InternalRow, NoopFilters, StructFilters}
 import org.apache.spark.sql.catalyst.expressions.{SpecificInternalRow, UnsafeArrayData}
 import org.apache.spark.sql.catalyst.util.{ArrayBasedMapData, ArrayData, DateTimeUtils, GenericArrayData}
-import org.apache.spark.sql.errors.QueryCompilationErrors
+import org.apache.spark.sql.protobuf.shadow.errors.QueryCompilationErrors
 import org.apache.spark.sql.protobuf.utils.ProtobufUtils
 import org.apache.spark.sql.protobuf.utils.ProtobufUtils.ProtoMatchedField
 import org.apache.spark.sql.protobuf.utils.ProtobufUtils.toFieldStr
