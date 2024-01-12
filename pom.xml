@@ -3786,5 +3786,11 @@
         </pluginManagement>
       </build>
     </profile>
+    <profile>
+      <id>fury-serializer</id>
+      <modules>
+        <module>fury-serializer</module>
+      </modules>
+    </profile>
   </profiles>
 </project>

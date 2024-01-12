@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+        <!ELEMENT project (modelVersion|parent|artifactId|packaging|name|url|properties|dependencies|build|profiles)*>
+        <!ATTLIST project
+                xmlns CDATA #REQUIRED
+                xmlns:xsi CDATA #REQUIRED
+                xsi:schemaLocation CDATA #REQUIRED>
+        <!ELEMENT modelVersion (#PCDATA)>
+        <!ELEMENT parent (groupId|artifactId|version|relativePath)*>
+        <!ELEMENT groupId (#PCDATA)>
+        <!ELEMENT artifactId (#PCDATA)>
+        <!ELEMENT version (#PCDATA)>
+        <!ELEMENT relativePath (#PCDATA)>
+        <!ELEMENT packaging (#PCDATA)>
+        <!ELEMENT name (#PCDATA)>
+        <!ELEMENT url (#PCDATA)>
+        <!ELEMENT properties (sbt.project.name|script.extension)*>
+        <!ELEMENT sbt.project.name (#PCDATA)>
+        <!ELEMENT dependencies (dependency)*>
+        <!ELEMENT dependency (groupId|artifactId|version|scope)*>
+        <!ELEMENT scope (#PCDATA)>
+        <!ELEMENT build (outputDirectory|testOutputDirectory|resources|plugins)*>
+        <!ELEMENT outputDirectory (#PCDATA)>
+        <!ELEMENT testOutputDirectory (#PCDATA)>
+        <!ELEMENT resources (resource)*>
+        <!ELEMENT resource (directory|filtering)*>
+        <!ELEMENT directory (#PCDATA)>
+        <!ELEMENT filtering (#PCDATA)>
+        <!ELEMENT plugins (plugin)*>
+        <!ELEMENT plugin (groupId|artifactId|executions|version|configuration)*>
+        <!ELEMENT executions (execution)*>
+        <!ELEMENT execution (phase|configuration|goals|id)*>
+        <!ELEMENT phase (#PCDATA)>
+        <!ELEMENT configuration (target|outputDirectory|overWriteReleases|overWriteSnapshots|overWriteIfNewer|useSubDirectoryPerType|includeArtifactIds|silent|sources|executable)*>
+        <!ELEMENT target (exec)*>
+        <!ELEMENT exec (arg)*>
+        <!ATTLIST exec
+                executable CDATA #REQUIRED>
+        <!ELEMENT arg (#PCDATA)>
+        <!ATTLIST arg
+                value CDATA #REQUIRED>
+        <!ELEMENT goals (goal)*>
+        <!ELEMENT goal (#PCDATA)>
+        <!ELEMENT id (#PCDATA)>
+        <!ELEMENT overWriteReleases (#PCDATA)>
+        <!ELEMENT overWriteSnapshots (#PCDATA)>
+        <!ELEMENT overWriteIfNewer (#PCDATA)>
+        <!ELEMENT useSubDirectoryPerType (#PCDATA)>
+        <!ELEMENT includeArtifactIds (#PCDATA)>
+        <!ELEMENT silent (#PCDATA)>
+        <!ELEMENT sources (source)*>
+        <!ELEMENT source (#PCDATA)>
+        <!ELEMENT profiles (profile)*>
+        <!ELEMENT profile (id|activation|properties|build)*>
+        <!ELEMENT activation (os)*>
+        <!ELEMENT os (family)*>
+        <!ELEMENT family (#PCDATA)>
+        <!ELEMENT script.extension (#PCDATA)>
+        <!ELEMENT executable (#PCDATA)>
+        ]>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.spark</groupId>
+    <artifactId>spark-parent_2.12</artifactId>
+    <version>3.3.2</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>spark-fury-serializer_2.12</artifactId>
+  <packaging>jar</packaging>
+  <name>Spark Fury Serializer</name>
+  <url>https://spark.apache.org/</url>
+
+  <properties>
+    <sbt.project.name>fury-serializer</sbt.project.name>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_2.12</artifactId>
+      <version>3.3.2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.furyio</groupId>
+      <artifactId>fury-core</artifactId>
+      <version>0.4.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+  <build>
+    <outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
+    <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+      <resource>
+        <!-- Include the properties file to provide the build information. -->
+        <directory>${project.build.directory}/extra-resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <configuration>
+              <!-- Execute the shell script to generate the spark build information. -->
+              <target>
+                <exec executable="bash">
+                  <arg value="${project.basedir}/../build/spark-build-info"/>
+                  <arg value="${project.build.directory}/extra-resources"/>
+                  <arg value="${project.version}"/>
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <!-- When using SPARK_PREPEND_CLASSES Spark classes compiled locally don't use
+               shaded deps. So here we store jars in their original form which are added
+               when the classpath is computed. -->
+          <!-- See similar execution in mllib/pom.xml -->
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+           <configuration>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <useSubDirectoryPerType>true</useSubDirectoryPerType>
+              <includeArtifactIds>
+                guava,jetty-io,jetty-servlet,jetty-servlets,jetty-continuation,jetty-http,jetty-plus,jetty-util,jetty-server,jetty-security,jetty-proxy,jetty-client
+              </includeArtifactIds>
+              <silent>true</silent>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/main/scala-${scala.binary.version}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>Windows</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+      </activation>
+      <properties>
+        <script.extension>.bat</script.extension>
+      </properties>
+    </profile>
+    <profile>
+      <id>unix</id>
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <script.extension>.sh</script.extension>
+      </properties>
+    </profile>
+    <profile>
+      <id>sparkr</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.6.0</version>
+            <executions>
+              <execution>
+                <id>sparkr-pkg</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>${project.basedir}${file.separator}..${file.separator}R${file.separator}install-dev${script.extension}</executable>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>
